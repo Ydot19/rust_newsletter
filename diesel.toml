@@ -1,0 +1,4 @@
+[print_schema]
+generate_missing_sql_type_definitions = true
+file = "lib/adapter/schema.rs" 
+

@@ -1,0 +1,38 @@
+[package]
+name = "newsletter_service"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.81.0"
+
+[[bin]]
+name = "newsletter_service"
+path = "./src/main.rs"
+
+[lib]
+name = "service"
+path = "./lib/libs.rs"
+
+[dependencies]
+axum = "0.7.5"
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.0", features = ["full"] } 
+tracing = "0.1"
+tracing-subscriber = "0.3"
+tower-http = { version = "0.5.0", features = ["trace"] }
+http-body-util = "0.1.0"
+chrono ={ version =  "0.4", features = [
+"serde"
+] }
+diesel = { version = "2.2.4", features = ["postgres", "uuid", "chrono", "r2d2"] }
+uuid = { version = "1.1.0", features = ["v4", "fast-rng", "macro-diagnostics"]}
+dotenvy = "0.15.6"
+
+[dev-dependencies]
+tower = { version = "0.4", features = ["util"] }
+fake = { version = "2.10.0", features = ["serde_json", "derive", "uuid"]}
+hyper = { version = "1", features = ["full"]}
+futures-util = "0.3"
+bytes = "1.0"
+http = "0.2"
+
