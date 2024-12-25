@@ -4,19 +4,15 @@ mod test {
     use std::str::FromStr;
     use std::time;
 
-    use crate::adapter::repository::{connection_pool, SubscriptionRepository};
-    use crate::adapter::schema::subscriptions;
+    use crate::adapter::repository::SubscriptionRepository;
     use crate::adapter::{configuration, repository::Repository};
     use crate::domain::errors::DomainError;
-    use diesel::r2d2::{ConnectionManager, Pool};
-    use diesel::{PgConnection, RunQueryDsl};
     use dotenvy::dotenv;
     use fake::{faker::internet::en::SafeEmail, Fake};
     use uuid::Uuid;
 
     pub struct TestContext {
         repo: Repository,
-        pool: Pool<ConnectionManager<PgConnection>>,
     }
 
     impl TestContext {
@@ -24,15 +20,7 @@ mod test {
             let repo = Repository::new(&cfg);
             assert!(repo.is_ok());
             let repo = repo.unwrap();
-            Self {
-                repo,
-                pool: connection_pool(&cfg),
-            }
-        }
-
-        pub fn clear(&mut self) {
-            let mut conn = self.pool.clone().get().unwrap();
-            let _ = diesel::delete(subscriptions::table).execute(&mut conn);
+            Self { repo }
         }
     }
 
@@ -45,8 +33,7 @@ mod test {
     async fn add_subscription() {
         // arrange
         let cfg = get_db_configuration();
-        let mut ctx = TestContext::new(cfg).await;
-        ctx.clear();
+        let ctx = TestContext::new(cfg).await;
         const EMAIL: &str = "ydot19@github.com";
         // act
         let result = ctx.repo.add_subscription(
@@ -65,7 +52,6 @@ mod test {
         // arrange
         let cfg = get_db_configuration();
         let mut ctx = TestContext::new(cfg).await;
-        ctx.clear();
         let fake_email: String = SafeEmail().fake();
         let repo = ctx.repo.clone();
         let first = repo.clone().add_subscription(
@@ -87,6 +73,7 @@ mod test {
         let res = ctx.repo.get_subscriptions(fake_email.clone());
 
         // assert
+        println!("Length of Result: {}", res.len());
         assert_eq!(2, res.len());
         assert!(res
             .clone()
@@ -112,7 +99,6 @@ mod test {
         // arrange
         let cfg = get_db_configuration();
         let mut ctx = TestContext::new(cfg).await;
-        ctx.clear();
         let subscription_id = Uuid::new_v4();
         // act
         let result = ctx.repo.remove_subscription(subscription_id);
