@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-24.04
     defaults:
       run:
-        working-directory: ./newsletter_service
+        working-directory: ./
     
     env:
       DB_NAME: newsletter 

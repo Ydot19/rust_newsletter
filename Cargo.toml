@@ -12,6 +12,11 @@ path = "./src/main.rs"
 name = "service"
 path = "./lib/libs.rs"
 
+[[test]]
+name = "integration"
+path = "tests/integration/mod.rs"
+test = true
+
 [dependencies]
 axum = "0.7.5"
 serde_json = "1.0"

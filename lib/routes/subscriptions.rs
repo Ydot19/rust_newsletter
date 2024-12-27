@@ -52,7 +52,6 @@ pub(crate) async fn create_subscription_handler(
         arg.email.as_str().to_string(),
         SystemTime::now(),
     );
-    // let resp = add_subscribe(arg, &mut *repo);
     match resp {
         Ok(_) => (
             StatusCode::CREATED,

@@ -19,11 +19,19 @@ pub mod api {
     use tracing_subscriber::layer::SubscriberExt;
     use tracing_subscriber::util::SubscriberInitExt;
 
-    pub fn app() -> Router {
-        tracing_subscriber::registry()
-            .with(tracing_subscriber::fmt::layer())
-            .init();
+    use std::sync::Once;
+    static TRACING: Once = Once::new();
 
+    fn setup() {
+        TRACING.call_once(|| {
+            tracing_subscriber::registry()
+                .with(tracing_subscriber::fmt::layer())
+                .init();
+        });
+    }
+
+    pub fn app() -> Router {
+        setup();
         let cfg = DatabaseConfiguration::new();
         let repo = Repository::new(&cfg);
         if repo.is_err() {

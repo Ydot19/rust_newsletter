@@ -50,4 +50,4 @@ test-lib:
 	cargo nextest run --lib
 
 test-integration:
-	cargo nextest run --test '*'
+	cargo nextest run --test integration
