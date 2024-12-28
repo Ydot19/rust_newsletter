@@ -1,23 +1,25 @@
-FROM docker.io/library/rust:1.81 as builder
+FROM docker.io/library/rust:1.83 as builder
 
-# Install cross-compilation tools
-RUN apt-get update && apt-get install -y \
+RUN dpkg --add-architecture arm64 && \
+    apt-get update && \
+    apt-get install -y \
     gcc-aarch64-linux-gnu \
+    libpq-dev:arm64 \
     && rm -rf /var/lib/apt/lists/*
 
-# Add ARM64 target
 RUN rustup target add aarch64-unknown-linux-gnu
 
-# Set the working directory in the container
 WORKDIR /app
-
-# Copy the entire project
 COPY . .
 
-# Build the application
+ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+ENV CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc
+ENV AR_aarch64_unknown_linux_gnu=aarch64-linux-gnu-ar
+ENV PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig
+
 RUN cargo build --release --target aarch64-unknown-linux-gnu
 
-# use the latest bookworm to align with the version of rusn
+# use the latest bookworm to align with the version of rust
 FROM debian:bookworm-slim
 
 RUN apt-get update && apt-get install -y \

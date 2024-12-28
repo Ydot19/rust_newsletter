@@ -7,9 +7,13 @@ on:
       - dev
     paths:
       - "**.rs"
+      - "Cargo.*"
+      - ".github/workflows/testing.yml"
   pull_request:
     paths:
       - "**.rs"
+      - "Cargo.*"
+      - ".github/workflows/testing.yml"
 
 env:
   CARGO_TERM_COLOR: always
@@ -62,15 +66,15 @@ jobs:
     - name: Start database
       run: make up 
 
+    - name: Run integration tests
+      run: make test-integration
+
     - name: Run lib tests
       run: make test-lib
 
     - name: Start backend service
-      run: make start-backend 
+      run: make down start-backend
     
-    - name: Run integration tests
-      run: make test-integration
-
     - name: Tear Down
       run: make down
 

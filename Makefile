@@ -17,7 +17,7 @@ install:
 
 start-database:
 	@echo "Waiting for database to be healthy..."
-	podman-compose up -d database 
+	podman-compose up -d database
 	@sleep 10
 
 stop-database:
@@ -39,12 +39,12 @@ load-schema:
 
 start-backend:
 	@echo "Waiting for backend service to run"
-	podman-compose up -d backend 
+	podman-compose up -d backend
 
 up: start-database load-schema 
 
 down:
-	podman pod rm -f pod_newsletter_service
+	podman-compose down --volumes
 
 test-lib:
 	cargo nextest run --lib
