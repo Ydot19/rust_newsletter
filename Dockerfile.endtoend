@@ -1,0 +1,7 @@
+FROM docker.io/library/rust:1.83 
+
+WORKDIR /app
+COPY . .
+
+# Instead of running tests directly, use an entrypoint script that keeps container alive
+CMD tail -f /dev/null

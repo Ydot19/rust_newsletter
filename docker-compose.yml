@@ -1,12 +1,6 @@
 version: "3"
 
 services:
-  wait:
-    image: hello-world:latest
-    depends_on:
-      database:
-        condition: service_healthy
-
   database:
     image: postgres:16
     environment:
@@ -20,11 +14,12 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U postgres -d newsletter && psql -U postgres -d newsletter -c 'SELECT 1'"]
+      interval: 10s
       timeout: 5s
       retries: 5
-  
+      start_period: 30s
+
   backend:
     build:
       context: .
@@ -42,6 +37,15 @@ services:
     depends_on:
       database:
         condition: service_healthy
+
+  endtoend:
+    build:
+      context: .
+      dockerfile: Dockerfile.endtoend
+    environment:
+      - BACKEND_URL=http://backend:8081
+    networks:
+      - app-network
 
 volumes:
   data:

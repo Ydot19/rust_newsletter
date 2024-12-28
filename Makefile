@@ -40,14 +40,24 @@ load-schema:
 start-backend:
 	@echo "Waiting for backend service to run"
 	podman-compose up -d backend
-
-up: start-database load-schema 
+	
+up:
+	podman-compose up -d
 
 down:
-	podman-compose down --volumes
+	podman-compose down
 
 test-lib:
 	cargo nextest run --lib
 
 test-integration:
 	cargo nextest run --test integration
+
+test-endtoend:
+	cargo nextest run --test endtoend
+
+start-endtoend:
+	podman-compose up -d endtoend
+
+run-endtoend:
+	podman-compose exec endtoend cargo test --test endtoend

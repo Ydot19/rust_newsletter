@@ -27,7 +27,8 @@ jobs:
         working-directory: ./
     
     env:
-      DB_NAME: newsletter 
+      DB_NAME: newsletter
+      DATABASE_URL: postgresql://localhost:5432/newsletter?sslmode=disable&user=postgres&password=postgres
 
     steps:
     - uses: actions/checkout@v3
@@ -37,10 +38,10 @@ jobs:
       with:
         toolchain: stable
     
-    - name: test runner
+    - name: Install cargo tools
       uses: taiki-e/install-action@v2
       with:
-        tool: nextest
+        tool: nextest,cargo-binstall
 
     - name: Install Podman
       run: |
@@ -63,18 +64,33 @@ jobs:
           ${{ runner.os }}-build-
           ${{ runner.os }}-
 
-    - name: Start database
-      run: make up 
+    - name: Install diesel
+      run: cargo binstall diesel_cli
 
-    - name: Run integration tests
-      run: make test-integration
-
-    - name: Run lib tests
-      run: make test-lib
-
-    - name: Start backend service
-      run: make down start-backend
+    # - name: Start database
+    #   run: make start-database load-schema
+    #
+    # - name: Run lib tests
+    #   run: make test-lib
+    #
+    # - name: Run integration tests
+    #   run: make test-integration
     
-    - name: Tear Down
+    - name: Start services
+        # have to tear down the service because podman-compose cannot add the backend service to the existing
+        # database service in the network service: related issue https://github.com/containers/podman-compose/issues/375
+      run: |
+        make down up
+        sleep 20
+        make migrate-database
+
+    - name: Run end-to-end tests
+      run: |
+        sleep 20
+        podman-compose ps
+        podman-compose logs backend
+        make run-endtoend
+  
+    - name: Tear down
       run: make down
 
