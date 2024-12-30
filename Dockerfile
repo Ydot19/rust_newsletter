@@ -20,4 +20,4 @@ WORKDIR /app
 COPY --from=builder /app/target/release/newsletter_service .
 
 EXPOSE 8081
-CMD ["sleep 5 && ./newsletter_service"]
+CMD ["./newsletter_service"]

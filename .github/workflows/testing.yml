@@ -67,14 +67,14 @@ jobs:
     - name: Install diesel
       run: cargo binstall diesel_cli
 
-    # - name: Start database
-    #   run: make start-database load-schema
-    #
-    # - name: Run lib tests
-    #   run: make test-lib
-    #
-    # - name: Run integration tests
-    #   run: make test-integration
+    - name: Start database
+      run: make start-database migrate-database
+
+    - name: Run lib tests
+      run: make test-lib
+
+    - name: Run integration tests
+      run: make test-integration
     
     - name: Start services
         # have to tear down the service because podman-compose cannot add the backend service to the existing
@@ -87,8 +87,6 @@ jobs:
     - name: Run end-to-end tests
       run: |
         sleep 20
-        podman-compose ps
-        podman-compose logs backend
         make run-endtoend
   
     - name: Tear down

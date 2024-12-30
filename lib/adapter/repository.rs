@@ -28,12 +28,34 @@ pub struct Repository {
 pub(super) fn connection_pool(
     cfg: &DatabaseConfiguration,
 ) -> Pool<ConnectionManager<PgConnection>> {
-    let manager = ConnectionManager::<PgConnection>::new(cfg.url());
-    Pool::builder()
-        .max_size(10)
-        .test_on_check_out(true)
-        .build(manager)
-        .expect("failed to get connection pool")
+    let mut retries = 3;
+    let mut delay = std::time::Duration::from_secs(1);
+    std::thread::sleep(delay);
+    loop {
+        let manager = ConnectionManager::<PgConnection>::new(cfg.connection_string());
+        match Pool::builder()
+            .max_size(10)
+            .test_on_check_out(true)
+            .build(manager)
+        {
+            Ok(pool) => return pool,
+            Err(e) => {
+                if retries == 0 {
+                    panic!("Failed to create connection pool after retries: {}", e);
+                }
+
+                tracing::warn!(
+                    "Failed to create connection pool: {}, retrying in {:?}",
+                    e,
+                    delay
+                );
+
+                std::thread::sleep(delay);
+                retries -= 1;
+                delay *= 2; // exponential backoff
+            }
+        }
+    }
 }
 
 impl Repository {
