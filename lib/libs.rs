@@ -1,6 +1,6 @@
 mod adapter;
 mod domain;
-pub mod port;
+pub mod model;
 mod routes;
 
 pub mod api {
