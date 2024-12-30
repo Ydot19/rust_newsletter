@@ -4,7 +4,7 @@ pub mod helper_functions {
     use bytes::Bytes;
     use futures_util::stream::StreamExt;
     use serde::Deserialize;
-    use service::port::models::{
+    use service::model::models::{
         CreateSubscriptionRequest, GetSubscriptionRequest, RemoveSubscriptionRequest,
     };
     pub fn new_create_subscription_request(

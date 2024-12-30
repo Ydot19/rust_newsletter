@@ -1,5 +1,5 @@
 use crate::domain::errors::{self as domain_errors, DomainError};
-use crate::port::models::{self as api_models};
+use crate::model::models::{self as api_models};
 use axum::http::header::CONTENT_TYPE;
 use axum::http::Response;
 use axum::response::IntoResponse;

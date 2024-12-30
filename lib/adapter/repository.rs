@@ -1,7 +1,7 @@
 use std::time;
 
 use crate::domain::errors::DomainError;
-use crate::port::models as api_models;
+use crate::model::models as api_models;
 
 use super::schema::subscriptions;
 use super::{configuration::DatabaseConfiguration, models::Subscription};

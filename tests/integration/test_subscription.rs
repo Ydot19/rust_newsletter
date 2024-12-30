@@ -10,7 +10,7 @@ mod subscription_integration_tests {
     use fake::{faker::internet::en::SafeEmail, Fake};
     use http_body_util::BodyExt;
     use service::api;
-    use service::port::models::{
+    use service::model::models::{
         GetSubscriptionsResponse, RemoveSubscriptionResponse, Subscription,
     };
     use tower::ServiceExt;
