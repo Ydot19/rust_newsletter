@@ -1,4 +1,3 @@
-
 name: Testing 
 
 on:
@@ -17,22 +16,69 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  DB_NAME: newsletter
+  DATABASE_URL: postgresql://localhost:5432/newsletter?sslmode=disable&user=postgres&password=postgres
 
 jobs:
-  test:
-    name: Run tests
+  lib-test:
+    name: Run lib tests
     runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: ./
-    
-    env:
-      DB_NAME: newsletter
-      DATABASE_URL: postgresql://localhost:5432/newsletter?sslmode=disable&user=postgres&password=postgres
 
     steps:
     - uses: actions/checkout@v3
 
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+  
+    - name: Install cargo tools
+      uses: taiki-e/install-action@v2
+      with:
+        tool: nextest,cargo-binstall
+
+    - name: Install Podman
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y podman
+        sudo apt-get install -y pipx
+        pipx install podman-compose
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      env:
+        cache-name: cache-dependencies
+      with:
+        path: |
+          ~/.cargo
+          newsletter/target
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+
+    - name: Install diesel
+      run: cargo binstall diesel_cli
+
+    - name: Start database
+      run: make start-database migrate-database
+
+    - name: Run lib tests
+      run: make test-lib
+
+  integration-tests:
+    name: Run integration tests
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./
+
+    steps:
+    - uses: actions/checkout@v3
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
       with:
@@ -70,12 +116,52 @@ jobs:
     - name: Start database
       run: make start-database migrate-database
 
-    - name: Run lib tests
-      run: make test-lib
-
     - name: Run integration tests
       run: make test-integration
+  
+  end-to-end:
+    name: Run endtoend tests
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
     
+    - name: Install cargo tools
+      uses: taiki-e/install-action@v2
+      with:
+        tool: nextest,cargo-binstall
+
+    - name: Install Podman
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y podman
+        sudo apt-get install -y pipx
+        pipx install podman-compose
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      env:
+        cache-name: cache-dependencies
+      with:
+        path: |
+          ~/.cargo
+          newsletter/target
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+
+    - name: Install diesel
+      run: cargo binstall diesel_cli
+
     - name: Start services
         # have to tear down the service because podman-compose cannot add the backend service to the existing
         # database service in the network service: related issue https://github.com/containers/podman-compose/issues/375
@@ -90,5 +176,6 @@ jobs:
         make run-endtoend
   
     - name: Tear down
+      if: always()
       run: make down
 
