@@ -17,6 +17,11 @@ name = "integration"
 path = "tests/integration/mod.rs"
 test = true
 
+[[test]]
+name = "endtoend"
+path = "tests/end_to_end/mod.rs"
+test = true
+
 [dependencies]
 axum = "0.7.5"
 serde_json = "1.0"
@@ -35,6 +40,7 @@ dotenvy = "0.15.6"
 
 [dev-dependencies]
 tower = { version = "0.4", features = ["util"] }
+reqwest = { version = "0.12", features = ["json"] }
 fake = { version = "2.10.0", features = ["serde_json", "derive", "uuid"]}
 hyper = { version = "1", features = ["full"]}
 futures-util = "0.3"
